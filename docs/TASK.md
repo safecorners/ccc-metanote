@@ -6,20 +6,20 @@
 
 ## Phase 1 — 기반: 디자인 시스템 + Supabase + 인증
 
-- [ ] 👤 P1-1 Supabase 프로젝트 생성, URL/anon key 발급, Auth 이메일 확인(confirm email) 끄기
-- [ ] P1-2 Vitest + React Testing Library 셋업 (`vitest.config.ts`, `npm run test`)
-- [ ] P1-3 `src/app/globals.css` — Tailwind v4 `@theme`에 DESIGN.md 토큰 정의 (canvas/ink/primary/accent 5색/radius/타이포), 기본 테마 제거
-- [ ] P1-4 Pretendard 폰트 (`src/lib/fonts.ts`) + `layout.tsx` `lang="ko"`·MetaNote 메타데이터 (Geist 제거)
-- [ ] P1-5 shadcn/ui 초기화 (`npx shadcn init`) + `lucide-react` 설치 — DESIGN.md 토큰과 CSS 변수 연결 (프리미티브는 필요 시점에 개별 추가)
-- [ ] P1-6 UI 컴포넌트 테스트 작성 — `Button`/`ErrorTag` 동작·상태 (TDD)
-- [ ] P1-7 UI 컴포넌트 구현 — `src/components/ui/` `Button`, `Card`, `Input`, `ErrorTag` (DESIGN.md 명세대로 직접 구현, shadcn 미사용)
-- [ ] P1-8 Supabase 연결 — `@supabase/supabase-js` + `@supabase/ssr` 설치, `src/lib/supabase/client.ts`/`server.ts`/`proxy.ts`, `.env.local` + `.env.example`
-- [ ] P1-9 `src/proxy.ts` — 세션 리프레시 + 미인증 시 `/login` 리다이렉트 (Next 16: middleware 아님, matcher로 정적 자산 제외)
-- [ ] P1-10 인증 구현 — `src/app/login/page.tsx`, `src/app/signup/page.tsx`(이메일/비번/닉네임/학년), `actions.ts`(signUp/signIn/signOut)
-- [ ] P1-11 `src/lib/dal.ts` `verifySession()`(React `cache()`) + 인증 라우트 그룹 `src/app/(app)/layout.tsx`(네비+로그아웃) + 빈 `/dashboard`
-- [ ] P1-12 Playwright 셋업 — `playwright.config.ts`(webServer, 데스크톱+모바일 프로젝트), 테스트 계정 2개, `e2e/auth.setup.ts`(storageState)
-- [ ] P1-13 `e2e/auth.spec.ts` — 미인증 리다이렉트 / 로그인 → 대시보드 / 새로고침 세션 유지(proxy 리프레시 검증) / 로그아웃
-- [ ] **P1-V 검증 게이트**: `npm run test && npm run test:e2e` 통과
+- [x] 👤 P1-1 Supabase 프로젝트 생성, URL/anon key 발급, Auth 이메일 확인(confirm email) 끄기
+- [x] P1-2 Vitest + React Testing Library 셋업 (`vitest.config.ts`, `npm run test`)
+- [x] P1-3 `src/app/globals.css` — Tailwind v4 `@theme`에 DESIGN.md 토큰 정의 (canvas/ink/primary/accent 5색/radius/타이포), 기본 테마 제거
+- [x] P1-4 Pretendard 폰트 (`src/lib/fonts.ts`) + `layout.tsx` `lang="ko"`·MetaNote 메타데이터 (Geist 제거)
+- [x] P1-5 shadcn/ui 초기화 (`npx shadcn init`) + `lucide-react` 설치 — DESIGN.md 토큰과 CSS 변수 연결 (프리미티브는 필요 시점에 개별 추가)
+- [x] P1-6 UI 컴포넌트 테스트 작성 — `Button`/`ErrorTag` 동작·상태 (TDD)
+- [x] P1-7 UI 컴포넌트 구현 — `src/components/ui/` `Button`, `Card`, `Input`, `ErrorTag` (DESIGN.md 명세대로 직접 구현, shadcn 미사용)
+- [x] P1-8 Supabase 연결 — `@supabase/supabase-js` + `@supabase/ssr` 설치, `src/lib/supabase/client.ts`/`server.ts`/`proxy.ts`, `.env.local` + `.env.example`
+- [x] P1-9 `src/proxy.ts` — 세션 리프레시 + 미인증 시 `/login` 리다이렉트 (Next 16: middleware 아님, matcher로 정적 자산 제외)
+- [x] P1-10 인증 구현 — `src/app/(auth)/login/page.tsx`, `src/app/(auth)/signup/page.tsx`(이메일/비번/닉네임/학년), `actions.ts`(signUp/signIn/signOut — 닉네임·학년은 user_metadata에 보관, Phase 3에서 profiles로 백필)
+- [x] P1-11 `src/lib/dal.ts` `verifySession()`(React `cache()`) + 인증 라우트 그룹 `src/app/(app)/layout.tsx`(네비+로그아웃) + 빈 `/dashboard`
+- [x] P1-12 Playwright 셋업 — `playwright.config.ts`(webServer, 데스크톱+모바일 프로젝트), 테스트 계정 2개(`E2E_USER_{A,B}_*`, `.env.local`), `e2e/auth.setup.ts`(storageState, idempotent 가입)
+- [x] P1-13 `e2e/auth.spec.ts` — 미인증 리다이렉트 / 로그인 → 대시보드 / 새로고침 세션 유지(proxy 리프레시 검증) / 로그아웃
+- [x] **P1-V 검증 게이트**: `npm run test && npm run test:e2e` 통과 (Vitest 11 + Playwright 10, `npm run build` 확인)
 
 ## Phase 2 — 랜딩 페이지
 
