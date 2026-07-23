@@ -52,16 +52,16 @@
 
 ## Phase 5 — 시각화 대시보드 (시나리오 2·3)
 
-- [ ] P5-1 집계 순수 함수 단위 테스트 작성 — 유형별 카운트/단원×유형 매트릭스/주별 시계열/착각점수 계산 (TDD)
-- [ ] P5-2 집계 함수 구현 + `queries.ts` 집계 쿼리 추가
-- [ ] P5-3 `recharts` 설치 + `src/app/(app)/dashboard/page.tsx` — 서버 집계 + `<Suspense>` 스트리밍 구조
-- [ ] P5-4 `src/components/charts/ErrorRadar.tsx` — RadarChart(5개 유형 축, taxonomy 색)
-- [ ] P5-5 `src/components/charts/UnitHeatmap.tsx` — 커스텀 CSS grid(단원×유형, 카운트 농도)
-- [ ] P5-6 `src/components/charts/TrendLine.tsx` — 주 단위 유형별 추이
-- [ ] P5-7 `src/components/charts/GapScore.tsx` + 예상/실제 점수 입력 UI — 착각점수 + 해석 코멘트("예상보다 N점 낮았어요…")
-- [ ] P5-8 빈 상태 — 3건 미만 시 안내 카드 + 입력 CTA
-- [ ] P5-9 `e2e/dashboard.spec.ts` — 6건+ 입력 후 차트 렌더·즉시 갱신, 신규 계정 빈 상태, 모바일 세로 스택
-- [ ] **P5-V 검증 게이트**: 전체 테스트 통과 + 시나리오 2·3 수기 확인
+- [x] P5-1 집계 순수 함수 단위 테스트 작성 — 유형별 카운트/단원×유형 매트릭스/주별 시계열/착각점수 계산 (TDD, `src/lib/aggregate.test.ts` 12건)
+- [x] P5-2 집계 함수 구현(`src/lib/aggregate.ts` — 날짜는 YYYY-MM-DD 문자열만 다뤄 TZ 차단) + `queries.ts`에 `getProfile`/`getScorePredictions` 추가
+- [x] P5-3 `recharts` 설치 + `src/app/(app)/dashboard/page.tsx` — 서버 집계 + `<Suspense>` 스트리밍 구조 (스켈레톤 폴백)
+- [x] P5-4 `src/components/charts/error-radar.tsx` — RadarChart(5개 유형 축, 축 tick에 taxonomy 색 도트, 폴리곤은 primary)
+- [x] P5-5 `src/components/charts/unit-heatmap.tsx` — 커스텀 CSS grid(단원×유형, 카운트 농도 틴트, 서버 컴포넌트)
+- [x] P5-6 `src/components/charts/trend-line.tsx` — 주 단위 유형별 추이 LineChart + 범례 칩
+- [x] P5-7 `src/components/charts/gap-score.tsx` + 점수 입력 UI(`dashboard/score-section.tsx`, `dashboard/actions.ts`) — 착각점수 + 해석 코멘트("예상보다 N점 낮았어요…"), 예상만 기록 후 실제 점수 추가 입력 플로우
+- [x] P5-8 빈 상태 — 3건 미만 시 안내 카드(n/3 진행) + 입력 CTA (착각점수 카드는 항상 노출)
+- [x] P5-9 `e2e/dashboard.spec.ts` — 시드 7건 후 차트 4종 렌더·기록 직후 갱신, 시나리오 3(예상 85→실제 73→−12점), 계정 B 빈 상태, 모바일 세로 스택 (모바일 전용, DASH- 접두사로 mistakes.spec과 격리)
+- [x] **P5-V 검증 게이트**: 전체 테스트 통과 (Vitest 47 + Playwright 39) — 시나리오 2·3은 E2E로 검증, prod build 확인
 
 ## Phase 6 — 폴리시 & 코호트 투입 준비
 
