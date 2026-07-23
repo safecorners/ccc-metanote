@@ -10,14 +10,15 @@
 - [ ] P1-2 Vitest + React Testing Library 셋업 (`vitest.config.ts`, `npm run test`)
 - [ ] P1-3 `src/app/globals.css` — Tailwind v4 `@theme`에 DESIGN.md 토큰 정의 (canvas/ink/primary/accent 5색/radius/타이포), 기본 테마 제거
 - [ ] P1-4 Pretendard 폰트 (`src/lib/fonts.ts`) + `layout.tsx` `lang="ko"`·MetaNote 메타데이터 (Geist 제거)
-- [ ] P1-5 UI 컴포넌트 테스트 작성 — `Button`/`ErrorTag` 동작·상태 (TDD)
-- [ ] P1-6 UI 컴포넌트 구현 — `src/components/ui/` `Button`, `Card`, `Input`, `ErrorTag` (DESIGN.md 명세)
-- [ ] P1-7 Supabase 연결 — `@supabase/supabase-js` + `@supabase/ssr` 설치, `src/lib/supabase/client.ts`/`server.ts`/`proxy.ts`, `.env.local` + `.env.example`
-- [ ] P1-8 `src/proxy.ts` — 세션 리프레시 + 미인증 시 `/login` 리다이렉트 (Next 16: middleware 아님, matcher로 정적 자산 제외)
-- [ ] P1-9 인증 구현 — `src/app/login/page.tsx`, `src/app/signup/page.tsx`(이메일/비번/닉네임/학년), `actions.ts`(signUp/signIn/signOut)
-- [ ] P1-10 `src/lib/dal.ts` `verifySession()`(React `cache()`) + 인증 라우트 그룹 `src/app/(app)/layout.tsx`(네비+로그아웃) + 빈 `/dashboard`
-- [ ] P1-11 Playwright 셋업 — `playwright.config.ts`(webServer, 데스크톱+모바일 프로젝트), 테스트 계정 2개, `e2e/auth.setup.ts`(storageState)
-- [ ] P1-12 `e2e/auth.spec.ts` — 미인증 리다이렉트 / 로그인 → 대시보드 / 새로고침 세션 유지(proxy 리프레시 검증) / 로그아웃
+- [ ] P1-5 shadcn/ui 초기화 (`npx shadcn init`) + `lucide-react` 설치 — DESIGN.md 토큰과 CSS 변수 연결 (프리미티브는 필요 시점에 개별 추가)
+- [ ] P1-6 UI 컴포넌트 테스트 작성 — `Button`/`ErrorTag` 동작·상태 (TDD)
+- [ ] P1-7 UI 컴포넌트 구현 — `src/components/ui/` `Button`, `Card`, `Input`, `ErrorTag` (DESIGN.md 명세대로 직접 구현, shadcn 미사용)
+- [ ] P1-8 Supabase 연결 — `@supabase/supabase-js` + `@supabase/ssr` 설치, `src/lib/supabase/client.ts`/`server.ts`/`proxy.ts`, `.env.local` + `.env.example`
+- [ ] P1-9 `src/proxy.ts` — 세션 리프레시 + 미인증 시 `/login` 리다이렉트 (Next 16: middleware 아님, matcher로 정적 자산 제외)
+- [ ] P1-10 인증 구현 — `src/app/login/page.tsx`, `src/app/signup/page.tsx`(이메일/비번/닉네임/학년), `actions.ts`(signUp/signIn/signOut)
+- [ ] P1-11 `src/lib/dal.ts` `verifySession()`(React `cache()`) + 인증 라우트 그룹 `src/app/(app)/layout.tsx`(네비+로그아웃) + 빈 `/dashboard`
+- [ ] P1-12 Playwright 셋업 — `playwright.config.ts`(webServer, 데스크톱+모바일 프로젝트), 테스트 계정 2개, `e2e/auth.setup.ts`(storageState)
+- [ ] P1-13 `e2e/auth.spec.ts` — 미인증 리다이렉트 / 로그인 → 대시보드 / 새로고침 세션 유지(proxy 리프레시 검증) / 로그아웃
 - [ ] **P1-V 검증 게이트**: `npm run test && npm run test:e2e` 통과
 
 ## Phase 2 — 랜딩 페이지
@@ -44,8 +45,8 @@
 
 - [ ] P4-1 폼 검증 로직 단위 테스트 작성 — 필수 필드(단원·error_type)·유효성 (TDD)
 - [ ] P4-2 폼 검증 로직 구현 + `createMistake` Server Action (`src/app/(app)/mistakes/actions.ts`, `revalidatePath`)
-- [ ] P4-3 오답 입력 폼 — `src/app/(app)/mistakes/new/page.tsx`: 단원 선택(학년 필터) + 오류 태그 1개 탭(필수) + 선택 입력(출처/문제번호/메모), 저장 토스트("차트가 업데이트됐어요")
-- [ ] P4-4 오답 목록 — `src/app/(app)/mistakes/page.tsx`: note-card(모바일)/테이블(데스크톱), 극복 완료 토글, 삭제(확인 다이얼로그)
+- [ ] P4-3 오답 입력 폼 — `src/app/(app)/mistakes/new/page.tsx`: 단원 선택(shadcn Select, 학년 필터) + 오류 태그 1개 탭(필수) + 선택 입력(출처/문제번호/메모), 저장 토스트(Sonner, "차트가 업데이트됐어요")
+- [ ] P4-4 오답 목록 — `src/app/(app)/mistakes/page.tsx`: note-card(모바일)/테이블(데스크톱), 극복 완료 토글, 삭제(shadcn Dialog 확인)
 - [ ] P4-5 `e2e/mistakes.spec.ts` — 모바일 프로젝트: 3건 입력 → 목록 → 토글 → 삭제, 계정 B로 A 데이터 비노출
 - [ ] **P4-V 검증 게이트**: 전체 테스트 통과 + 시나리오 1 수기 확인(탭 4~5회 이내 기록)
 

@@ -53,6 +53,20 @@ Green(#1aae39)은 극복 완료 전용, Brown은 일러스트 전용 — 오류 
 - 셋업은 Phase 1에서 완료: `vitest.config.ts`, `playwright.config.ts`(webServer로 dev 서버 자동 기동), `npm run test` / `npm run test:e2e` 스크립트.
 - 각 Phase의 "검증" = 해당 spec 통과 (`npm run test && npm run test:e2e`) + 수동 확인 최소화.
 
+## 사용 라이브러리
+
+| 라이브러리 | 용도 | 비고 |
+|---|---|---|
+| `zod` | Server Action 입력 검증(P4-1), error_type enum 검증 | taxonomy 상수에서 enum 파생 |
+| `lucide-react` | 아이콘 (네비, 극복 완료 체크 등) | shadcn 기본 아이콘 |
+| `shadcn/ui` | **선별 사용** — Dialog(삭제 확인), Select(단원 선택), Sonner(토스트), Label 등 동작 복잡한 프리미티브만 | DESIGN.md 토큰으로 재스타일링. Button/Card/Input/ErrorTag는 DESIGN.md 명세대로 직접 구현 |
+| `recharts` | 차트 4종 (레이더/히트맵 보조/시계열/착각점수) | 히트맵은 커스텀 CSS grid |
+| `@supabase/supabase-js` + `@supabase/ssr` | DB·인증 (쿠키 기반 세션) | |
+| `pretendard` | 폰트 (`next/font/local`) | |
+| dev: `vitest` + React Testing Library, `@playwright/test` | 테스트 | |
+
+**추가하지 않는 것**: react-hook-form(Server Actions + `useActionState`로 충분), 날짜 라이브러리(주별 집계는 표준 Date), 상태 관리 라이브러리(서버 중심 데이터 흐름).
+
 ---
 
 ## Phase 1 — 기반: 디자인 시스템 + Supabase + 인증
