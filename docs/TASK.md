@@ -65,15 +65,15 @@
 
 ## Phase 6 — 폴리시 & 코호트 투입 준비
 
-- [ ] P6-1 스트릭·누적 스탯 계산 단위 테스트 작성 (TDD)
-- [ ] P6-2 스탯 타일 구현 — 주 단위 스트릭/누적 기록/극복 완료 수 (`queries.ts` 파생, 별도 테이블 없음)
-- [ ] P6-3 온보딩 — 오답 0건 시 대시보드 3단계 안내 카드 (빈 상태 확장)
-- [ ] P6-4 모바일 마감 — 44px 터치 타깃, 하단 고정 "오답 기록" CTA, 라우트별 `loading.tsx`/`error.tsx`
-- [ ] P6-5 랜딩 목업 그래픽 → 실제 차트 화면 교체 (선택)
-- [ ] P6-6 `e2e/onboarding.spec.ts` + 전체 회귀 (`npm run test && npm run test:e2e`)
+- [x] P6-1 스트릭·누적 스탯 계산 단위 테스트 작성 (TDD, `aggregate.test.ts`에 `weeklyStreak`/`computeStats` 9건 — 이번 주 유예 규칙 포함)
+- [x] P6-2 스탯 타일 구현 — 주 단위 스트릭/누적 기록/극복 완료 수 (`dashboard/stat-tiles.tsx`, `getMistakes()` 결과에서 순수 함수로 파생, 별도 테이블 없음)
+- [x] P6-3 온보딩 — 오답 0건 시 대시보드 3단계 안내 카드(기록하기→태그 고르기→패턴 보기, 빈 상태 확장), 1~2건은 n/3 진행 카드 유지
+- [x] P6-4 모바일 마감 — 44px 터치 타깃(폼·네비·로그아웃), 하단 고정 "오답 기록" CTA(`components/app/bottom-cta.tsx`, /mistakes/new에선 숨김, safe-area 패딩), `(app)/loading.tsx`·`(app)/error.tsx`
+- [ ] P6-5 랜딩 목업 그래픽 → 실제 차트 화면 교체 (선택) — **미적용 결정**: 랜딩 모티프가 이미 taxonomy 토큰 기반이라 코호트 투입에 지장 없음, 실 스크린샷은 배포 후 갱신 여지
+- [x] P6-6 `e2e/onboarding.spec.ts`(3단계 카드·CTA 이동·하단 CTA 노출/숨김) + 전체 회귀 (Vitest 56 + Playwright 44 통과, 데스크톱은 모바일 전용 1건 skip)
 - [ ] 👤 P6-7 Vercel 배포 + 프로덕션 Supabase env + 테스트 계정 5–10개 생성
 - [ ] 👤 P6-8 실기기 수동 테스트 — iOS Safari/Android Chrome 전체 플로우 1회
-- [ ] **P6-V 검증 게이트**: 전체 회귀 통과 + 코호트 투입 가능 판정
+- [ ] **P6-V 검증 게이트**: 전체 회귀 통과(구현 측 완료 — Vitest 56 + Playwright 44 + prod build) / 코호트 투입 가능 판정은 👤 P6-7·P6-8 완료 후
 
 ## 운영 체크리스트 (구현 범위 밖)
 

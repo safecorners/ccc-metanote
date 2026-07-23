@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   computeGapEntries,
+  computeStats,
   countByErrorType,
   gapComment,
   unitTypeMatrix,
+  weeklyStreak,
   weeklyTrend,
 } from "./aggregate";
 import { ERROR_TYPE_IDS, type ErrorTypeId } from "./taxonomy";
@@ -169,6 +171,76 @@ describe("computeGapEntries", () => {
       gap: -12,
     });
     expect(result[1].gap).toBe(10);
+  });
+});
+
+// 2026-07-24(금) 기준: 이번 주 월요일 = 7/20, 지난주 = 7/13, 2주 전 = 7/6
+describe("weeklyStreak", () => {
+  const d = (date: string) => ({ mistake_date: date });
+
+  it("기록이 없으면 0", () => {
+    expect(weeklyStreak([], "2026-07-24")).toBe(0);
+  });
+
+  it("이번 주에만 기록이 있으면 1", () => {
+    expect(weeklyStreak([d("2026-07-24")], "2026-07-24")).toBe(1);
+  });
+
+  it("이번 주 + 지난주 연속이면 2", () => {
+    expect(
+      weeklyStreak([d("2026-07-22"), d("2026-07-15")], "2026-07-24"),
+    ).toBe(2);
+  });
+
+  it("이번 주 기록이 아직 없어도 지난주까지의 연속은 유지된다 (유예)", () => {
+    expect(
+      weeklyStreak([d("2026-07-13"), d("2026-07-06")], "2026-07-24"),
+    ).toBe(2);
+  });
+
+  it("지난주도 이번 주도 비었으면 끊긴 것 — 0", () => {
+    expect(weeklyStreak([d("2026-07-06")], "2026-07-24")).toBe(0);
+  });
+
+  it("중간에 빈 주가 있으면 거기서 멈춘다", () => {
+    expect(
+      weeklyStreak(
+        [d("2026-07-24"), d("2026-07-15"), d("2026-07-01")], // 7/6 주는 비었음
+        "2026-07-24",
+      ),
+    ).toBe(2);
+  });
+
+  it("한 주에 여러 건 기록해도 1주로 센다", () => {
+    expect(
+      weeklyStreak(
+        [d("2026-07-20"), d("2026-07-22"), d("2026-07-24")],
+        "2026-07-24",
+      ),
+    ).toBe(1);
+  });
+});
+
+describe("computeStats", () => {
+  it("누적 기록·극복 완료 수·주 스트릭을 함께 계산한다", () => {
+    const stats = computeStats(
+      [
+        { mistake_date: "2026-07-24", resolved: true },
+        { mistake_date: "2026-07-22", resolved: false },
+        { mistake_date: "2026-07-15", resolved: true },
+      ],
+      "2026-07-24",
+    );
+
+    expect(stats).toEqual({ total: 3, resolvedCount: 2, streak: 2 });
+  });
+
+  it("빈 목록이면 전부 0", () => {
+    expect(computeStats([], "2026-07-24")).toEqual({
+      total: 0,
+      resolvedCount: 0,
+      streak: 0,
+    });
   });
 });
 

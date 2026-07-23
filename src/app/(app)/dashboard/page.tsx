@@ -5,10 +5,16 @@ import { TrendLine } from "@/components/charts/trend-line";
 import { UnitHeatmap } from "@/components/charts/unit-heatmap";
 import { Card } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
-import { countByErrorType, unitTypeMatrix, weeklyTrend } from "@/lib/aggregate";
+import {
+  computeStats,
+  countByErrorType,
+  unitTypeMatrix,
+  weeklyTrend,
+} from "@/lib/aggregate";
 import { getMistakes, getScorePredictions } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { ScoreSection } from "./score-section";
+import { StatTiles } from "./stat-tiles";
 
 export const metadata: Metadata = {
   title: "대시보드",
@@ -43,16 +49,45 @@ function ChartCard({
   );
 }
 
+const ONBOARDING_STEPS = [
+  { title: "기록하기", description: "틀린 문제를 단원과 함께 30초 만에 남겨요" },
+  { title: "태그 고르기", description: "왜 틀렸는지 5가지 원인 중 1개만 골라요" },
+  { title: "패턴 보기", description: "차트에서 나의 실수 습관을 발견해요" },
+] as const;
+
 function EmptyState({ count }: { count: number }) {
   return (
-    <Card className="flex flex-col items-start gap-4 bg-canvas-soft p-8 md:col-span-2">
+    <Card className="flex flex-col items-start gap-5 bg-canvas-soft p-8 md:col-span-2">
       <p className="text-title">
         오답을 3개만 기록하면 나의 실수 패턴이 보여요
       </p>
-      <p className="text-body-sm text-ink-muted">
-        지금 {count}/3 —{" "}
-        {count === 0 ? "첫 오답부터 시작해요" : "조금만 더 기록해 볼까요?"}
-      </p>
+      {count === 0 ? (
+        // P6-3 온보딩 — 첫 방문(0건)에게는 3단계 안내
+        <ol className="flex flex-col gap-3">
+          {ONBOARDING_STEPS.map((step, i) => (
+            <li key={step.title} className="flex items-start gap-3">
+              <span
+                aria-hidden
+                className="flex size-6 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface text-eyebrow text-ink-secondary"
+              >
+                {i + 1}
+              </span>
+              <span className="flex flex-col">
+                <span className="text-body-sm font-medium text-ink">
+                  {step.title}
+                </span>
+                <span className="text-caption text-ink-muted">
+                  {step.description}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="text-body-sm text-ink-muted">
+          지금 {count}/3 — 조금만 더 기록해 볼까요?
+        </p>
+      )}
       <LinkButton href="/mistakes/new" className="min-h-11">
         오답 기록하기
       </LinkButton>
@@ -68,6 +103,9 @@ async function DashboardContent() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
+      {mistakes.length > 0 && (
+        <StatTiles stats={computeStats(mistakes, todaySeoul())} />
+      )}
       {mistakes.length >= 3 ? (
         <>
           <ChartCard title="오류 유형 분포" subtitle="나는 주로 왜 틀릴까?">

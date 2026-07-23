@@ -123,6 +123,48 @@ export function weeklyTrend(
   return [...buckets.values()];
 }
 
+/**
+ * 주 단위 스트릭 — 이번 주부터 거꾸로 연속으로 기록이 있는 주 수.
+ * 이번 주에 아직 기록이 없으면 지난주부터 센다 (주 초반에 스트릭이 끊겨 보이지 않게).
+ */
+export function weeklyStreak(
+  mistakes: { mistake_date: string }[],
+  today: string,
+): number {
+  const recordedWeeks = new Set(
+    mistakes.map((m) => weekStartOf(m.mistake_date)),
+  );
+
+  let cursor = weekStartOf(today);
+  if (!recordedWeeks.has(cursor)) {
+    cursor = addDays(cursor, -7); // 이번 주 유예
+  }
+
+  let streak = 0;
+  while (recordedWeeks.has(cursor)) {
+    streak += 1;
+    cursor = addDays(cursor, -7);
+  }
+  return streak;
+}
+
+export type Stats = {
+  total: number;
+  resolvedCount: number;
+  streak: number;
+};
+
+export function computeStats(
+  mistakes: { mistake_date: string; resolved: boolean }[],
+  today: string,
+): Stats {
+  return {
+    total: mistakes.length,
+    resolvedCount: mistakes.filter((m) => m.resolved).length,
+    streak: weeklyStreak(mistakes, today),
+  };
+}
+
 export type GapEntry = {
   id: string;
   examName: string;
