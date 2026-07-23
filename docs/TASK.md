@@ -43,12 +43,12 @@
 
 ## Phase 4 — 핵심 입력 플로우 (시나리오 1)
 
-- [ ] P4-1 폼 검증 로직 단위 테스트 작성 — 필수 필드(단원·error_type)·유효성 (TDD)
-- [ ] P4-2 폼 검증 로직 구현 + `createMistake` Server Action (`src/app/(app)/mistakes/actions.ts`, `revalidatePath`)
-- [ ] P4-3 오답 입력 폼 — `src/app/(app)/mistakes/new/page.tsx`: 단원 선택(shadcn Select, 학년 필터) + 오류 태그 1개 탭(필수) + 선택 입력(출처/문제번호/메모), 저장 토스트(Sonner, "차트가 업데이트됐어요")
-- [ ] P4-4 오답 목록 — `src/app/(app)/mistakes/page.tsx`: note-card(모바일)/테이블(데스크톱), 극복 완료 토글, 삭제(shadcn Dialog 확인)
-- [ ] P4-5 `e2e/mistakes.spec.ts` — 모바일 프로젝트: 3건 입력 → 목록 → 토글 → 삭제, 계정 B로 A 데이터 비노출
-- [ ] **P4-V 검증 게이트**: 전체 테스트 통과 + 시나리오 1 수기 확인(탭 4~5회 이내 기록)
+- [x] P4-1 폼 검증 로직 단위 테스트 작성 — 필수 필드(단원·error_type)·유효성 (TDD, `src/lib/mistake-form.test.ts` 17건)
+- [x] P4-2 폼 검증 로직 구현 + `createMistake` Server Action (`src/lib/mistake-form.ts` zod 스키마, `src/app/(app)/mistakes/actions.ts` — create/toggleResolved/delete + `revalidatePath`)
+- [x] P4-3 오답 입력 폼 — `src/app/(app)/mistakes/new/page.tsx`: 단원 선택(shadcn Select, 학년 필터) + 오류 태그 1개 탭(필수) + 선택 입력(출처/문제번호/메모), 저장 토스트(Sonner, "차트가 업데이트됐어요") — 저장 후 단원 유지·태그 초기화로 연속 입력 지원
+- [x] P4-4 오답 목록 — `src/app/(app)/mistakes/page.tsx`: note-card(모바일)/테이블(데스크톱), 극복 완료 토글, 삭제(shadcn Dialog 확인)
+- [x] P4-5 `e2e/mistakes.spec.ts` — 모바일 프로젝트: 3건 입력 → 목록 → 토글 → 삭제, 계정 B로 A 데이터 비노출 (desktop 프로젝트는 계정 데이터 경합 방지로 제외)
+- [x] **P4-V 검증 게이트**: 전체 테스트 통과 (Vitest 35 + Playwright 34) + 시나리오 1 확인 — 필수 입력 탭 4회(단원 열기→단원 선택→태그→저장)
 
 ## Phase 5 — 시각화 대시보드 (시나리오 2·3)
 

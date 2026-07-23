@@ -30,7 +30,8 @@ export default defineConfig({
     },
     {
       name: "desktop",
-      testIgnore: /rls\.spec\.ts/,
+      // mistakes는 계정 A 데이터를 변경하는 흐름 — 프로젝트 간 경합을 피해 모바일에서만 돈다
+      testIgnore: [/rls\.spec\.ts/, /mistakes\.spec\.ts/],
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["setup"],
     },
