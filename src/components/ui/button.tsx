@@ -1,9 +1,9 @@
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "primary" | "secondary" | "utility";
+export type ButtonVariant = "primary" | "secondary" | "utility";
 
-const variantClasses: Record<ButtonVariant, string> = {
+export const buttonVariantClasses: Record<ButtonVariant, string> = {
   primary:
     "bg-primary text-on-primary rounded-full px-6 py-2.5 min-h-11 active:bg-primary-active active:scale-[0.97]",
   secondary:
@@ -20,7 +20,7 @@ export function Button({
     <button
       className={cn(
         "inline-flex items-center justify-center text-button transition disabled:pointer-events-none disabled:opacity-50",
-        variantClasses[variant],
+        buttonVariantClasses[variant],
         className,
       )}
       {...props}

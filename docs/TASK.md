@@ -23,12 +23,12 @@
 
 ## Phase 2 — 랜딩 페이지
 
-- [ ] P2-1 `design-taste-frontend` 스킬 로드 → 랜딩 디자인 디렉션 확정 (DESIGN.md 랜딩 스펙 기반)
-- [ ] P2-2 히어로 밴드 구현 — 다크 인디고(#213183) "밤" 밴드, 메타인지 가치 제안 카피, `/login` CTA
-- [ ] P2-3 기능 소개 섹션 — 오답 태깅 → 패턴 시각화 → 착각점수 (차트는 디자인 토큰 기반 목업 그래픽), 필요 시 `src/components/landing/` 분리
-- [ ] P2-4 메타데이터·OG 이미지·파비콘 정리
-- [ ] P2-5 `e2e/landing.spec.ts` — 루트 렌더(모바일·데스크톱), 히어로·핵심 섹션 노출, CTA → `/login`
-- [ ] **P2-V 검증 게이트**: 전체 테스트 통과 + Lighthouse 수동 점검(레이아웃 시프트·폰트 로딩)
+- [x] P2-1 `design-taste-frontend` 스킬 로드 → 랜딩 디자인 디렉션 확정 (DESIGN.md 랜딩 스펙 기반)
+- [x] P2-2 히어로 밴드 구현 — 다크 인디고(#213183) "밤" 밴드, 메타인지 가치 제안 카피, `/login` CTA (+별자리 SVG, tw-animate-css 등장 모션, reduced-motion 가드)
+- [x] P2-3 기능 소개 섹션 — 오답 태깅 → 패턴 시각화 → 착각점수 (`src/components/landing/`, 실제 ErrorTag/Card 프리뷰 + 토큰 기반 레이더/히트맵 SVG 모티프)
+- [x] P2-4 메타데이터·OG 이미지·파비콘 정리 (`icon.svg` + `scripts/generate-og.mjs`로 OG/PNG 아이콘 생성, metadataBase는 P6-7에서 실 도메인 교체)
+- [x] P2-5 `e2e/landing.spec.ts` — 루트 렌더(모바일·데스크톱), 히어로·핵심 섹션 노출, CTA → `/login`, 앵커 이동, 가로 오버플로 가드
+- [x] **P2-V 검증 게이트**: 전체 테스트 통과 (Vitest 11 + Playwright 22) + 375px/1280px 풀페이지 렌더 수동 확인 (Lighthouse 정식 측정은 P6 배포 후 재점검)
 
 ## Phase 3 — 데이터 모델: 스키마 + RLS + 시드
 

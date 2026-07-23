@@ -181,7 +181,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-canvas-soft text-ink;
+    @apply bg-canvas-soft text-ink break-keep;
   }
   html {
     @apply font-sans;
