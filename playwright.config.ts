@@ -22,13 +22,21 @@ export default defineConfig({
   },
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
+    // 스키마·RLS는 브라우저와 무관하므로 뷰포트별로 중복 실행하지 않는다
+    {
+      name: "db",
+      testMatch: /rls\.spec\.ts/,
+      dependencies: ["setup"],
+    },
     {
       name: "desktop",
+      testIgnore: /rls\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["setup"],
     },
     {
       name: "mobile",
+      testIgnore: /rls\.spec\.ts/,
       use: { ...devices["iPhone 14"] },
       dependencies: ["setup"],
     },

@@ -1,19 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { ErrorTag } from "@/components/ui/error-tag";
-
-// Phase 3: src/lib/taxonomy.ts로 대체
-const LANDING_ERROR_TYPES = [
-  { label: "문제 해석 오류", dot: "bg-accent-sky" },
-  {
-    label: "개념 이해 부족",
-    dot: "bg-accent-orange",
-    selected: true,
-    selectedClassName: "bg-accent-orange/10 text-accent-orange-deep",
-  },
-  { label: "계산 실수", dot: "bg-accent-pink" },
-  { label: "부주의", dot: "bg-accent-teal" },
-  { label: "시간 부족", dot: "bg-accent-purple" },
-];
+import { ERROR_TYPES } from "@/lib/taxonomy";
 
 export function FeatureTagging() {
   return (
@@ -36,12 +23,12 @@ export function FeatureTagging() {
             </div>
             <p className="mt-3 text-body-sm text-ink-secondary">왜 틀렸을까?</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {LANDING_ERROR_TYPES.map((t) => (
+              {ERROR_TYPES.map((t) => (
                 <ErrorTag
-                  key={t.label}
+                  key={t.id}
                   label={t.label}
-                  dotClassName={t.dot}
-                  selected={t.selected}
+                  dotClassName={t.dotClassName}
+                  selected={t.id === "no_concept"}
                   selectedClassName={t.selectedClassName}
                 />
               ))}

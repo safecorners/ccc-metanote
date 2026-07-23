@@ -32,14 +32,14 @@
 
 ## Phase 3 — 데이터 모델: 스키마 + RLS + 시드
 
-- [ ] P3-1 2022 개정 교육과정 중학 수학 단원 목록 조사·확정 (~20행)
-- [ ] P3-2 `taxonomy.test.ts` 작성 — 5종 id·라벨·색 매핑 무결성 (TDD)
-- [ ] P3-3 `src/lib/taxonomy.ts` 구현 — 5종 `{id, label, color}` 단일 소스 (PLAN.md 표 그대로)
-- [ ] P3-4 `supabase/migrations/0001_init.sql` — profiles/units/mistakes(error_type CHECK 5종)/score_predictions + RLS(`auth.uid() = user_id`, units는 read-only) + 단원 시드
-- [ ] 👤 P3-5 마이그레이션 적용 (Supabase CLI `db push` 또는 대시보드 SQL Editor)
-- [ ] P3-6 `src/lib/types.ts`(row 타입) + `src/lib/queries.ts`(DAL: `getMistakes()`, `getUnits()` — 내부 `verifySession()`)
-- [ ] P3-7 RLS 격리 통합 테스트 — 계정 A 세션에서 B 데이터 미조회, 단원 시드 카운트·정렬 확인
-- [ ] **P3-V 검증 게이트**: 전체 테스트 통과
+- [x] P3-1 2022 개정 교육과정 중학 수학 단원 목록 조사·확정 (25행: 1학년 9 / 2학년 9 / 3학년 7)
+- [x] P3-2 `taxonomy.test.ts` 작성 — 5종 id·라벨·색 매핑 무결성 (TDD)
+- [x] P3-3 `src/lib/taxonomy.ts` 구현 — 5종 `{id, label, color}` + 태그 스타일 클래스 단일 소스 (랜딩 `feature-tagging`도 이걸 소비하도록 교체)
+- [x] P3-4 `supabase/migrations/0001_init.sql` — profiles(가입 트리거+기존 계정 백필)/units/mistakes(error_type CHECK 5종)/score_predictions + RLS(`(select auth.uid()) = user_id`, units는 read-only) + 단원 시드
+- [x] 👤 P3-5 마이그레이션 적용 — Supabase MCP `apply_migration`으로 `0001_init.sql` + `0002_revoke_handle_new_user.sql`(security advisor 조치) 적용, 테이블 4개 RLS 활성·단원 25행 확인
+- [x] P3-6 `src/lib/types.ts`(row 타입) + `src/lib/queries.ts`(DAL: `getMistakes()`, `getUnits()` — 내부 `verifySession()`)
+- [x] P3-7 `e2e/rls.spec.ts` — 계정 A 세션에서 B 데이터 미조회(mistakes·profiles·score_predictions), 단원 시드 카운트·정렬, units read-only, error_type CHECK. 브라우저 무관하므로 `db` 프로젝트로 분리
+- [x] **P3-V 검증 게이트**: 전체 테스트 통과 (Vitest 18 + Playwright 29 — RLS `db` 프로젝트 7건 포함)
 
 ## Phase 4 — 핵심 입력 플로우 (시나리오 1)
 
