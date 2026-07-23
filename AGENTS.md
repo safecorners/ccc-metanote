@@ -11,6 +11,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | [docs/RESEARCH.md](docs/RESEARCH.md) | 교육학 근거·경쟁 분석·구현 가능성 리서치 | 제품 방향·근거 확인 시 |
 | [docs/PLAN.md](docs/PLAN.md) | 단계별 구현 계획 (taxonomy·유저 시나리오·Phase 1~7) | 구현 시작 전 필독 |
 | [docs/TASK.md](docs/TASK.md) | Phase별 실행 체크리스트 (태스크 ID, 검증 게이트) | 작업 진행·커밋 시 갱신 |
+| [docs/SCHEMA.md](docs/SCHEMA.md) | 데이터 구조 (ERD·RLS·taxonomy 파생·접근 흐름) | 스키마·쿼리 작업 시 |
 | [DESIGN.md](DESIGN.md) | MetaNote 디자인 언어 (토큰·컴포넌트 명세) | UI 작업 시 필독 |
 
 # Project Guidelines
