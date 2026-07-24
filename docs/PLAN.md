@@ -145,11 +145,18 @@ Green(#1aae39)은 극복 완료 전용, Brown은 일러스트 전용 — 오류 
 
 **검증**: TDD — 스트릭·누적 스탯 계산 단위 테스트 먼저. `e2e/onboarding.spec.ts`(오답 0건 신규 계정의 3단계 안내 카드) + 전체 회귀(`npm run test && npm run test:e2e`). 실기기(iOS Safari/Android Chrome) 전체 플로우는 수동 1회. RESEARCH.md 1단계 벤치마크(1주 자발적 입력 빈도)는 created_at 기반으로 Supabase 대시보드에서 확인 — 앱 내 관리 화면 미구현.
 
-## Phase 7 — LLM 보조 분류 (개요만, 이번 범위 밖)
+## Phase 7 — LLM 보조 분류 (계획 수립 중)
 
-- **2층 분류 구조**: 학생이 풀이/메모를 입력하면 Claude API few-shot으로 1층(Newman 5종) 태그를 검증·제안하고, Movshovitz-Hadar 6유형(오용된 자료/잘못 해석된 언어/부적절한 추론/정리·정의 왜곡/검증 안 된 해답/기술적 오류)으로 서브 분류를 정밀화 — 최종 선택은 항상 학생. `ANTHROPIC_API_KEY` 서버 전용.
+- **2층 분류 구조**: 학생이 오답 상세(문제 본문/내가 쓴 답/정답/메모)를 입력하면 LLM few-shot으로 1층(Newman 5종) 태그를 검증·제안하고, Movshovitz-Hadar 6유형(오용된 자료/잘못 해석된 언어/부적절한 추론/정리·정의 왜곡/검증 안 된 해답/기술적 오류)으로 서브 분류를 정밀화 — 최종 선택은 항상 학생. API 키는 서버 전용.
 - `mistakes`에 `ai_suggested_type`/`ai_agreement` 컬럼 추가 → LLM-학생 일치율(목표 70%) 데이터 자동 축적.
-- 그 이후: 사진 첨부(Supabase Storage) → OCR(Mathpix)은 입력 마찰이 병목으로 확인될 때만.
+- 사진 첨부(Supabase Storage)는 **Phase 6.5에서 구현 완료** (TASK.md P6.5 참조 — 문제 본문/내 답/정답/사진 컬럼 및 상세 페이지). OCR(Mathpix)은 입력 마찰이 병목으로 확인될 때만 후속 검토.
+
+**계획 수립 현황 (2026-07-24)**
+
+- 확정: AI-학생 일치율은 앱 내 미표시 — 컬럼으로 데이터만 축적하고 Supabase 대시보드에서 확인.
+- 미결 ①: AI 제안 시점 — 입력 중 온디맨드(메모/상세 입력 후 버튼으로 제안 요청 → 학생이 최종 태그 선택) vs 저장 후 백그라운드 분류. "최종 선택은 항상 학생" 원칙에는 전자가 부합.
+- 미결 ②: 모델/제공자 — 본 문서는 Claude API 전제였으나 Gemini API 사용을 검토 중. 확정 시 SDK·env 키·프롬프트 구성 갱신 필요.
+- 진행: 분류 입력 데이터는 Phase 6.5로 확보됨(problem_text/my_answer/correct_answer/image_path). 별도 풀이 필드 추가 여부는 미결 ① 확정 후 판단.
 
 ---
 

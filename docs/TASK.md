@@ -86,9 +86,15 @@
 - [x] P6.5-7 `e2e/mistakes.spec.ts` +4건 — 사진·본문 포함 기록(픽스처 `e2e/fixtures/problem.jpg`), 목록→상세(본문·답·signed URL 이미지 naturalWidth), 계정 B 상세 접근 404, 상세 수정(답 변경+사진 삭제) / beforeAll에 storage 정리 추가
 - [x] **P6.5-V 검증 게이트**: Vitest 59 + Playwright 전체 회귀 + prod build 통과
 
+## Phase 7 — LLM 보조 분류 (계획 수립 중, 구현 미착수)
+
+- [ ] P7-0 계획 확정 — 아래 미결 사항 결정 후 태스크 분해 (진행 현황: PLAN.md Phase 7 "계획 수립 현황")
+  - 확정: AI-학생 일치율(목표 70%)은 앱 내 미표시 — `ai_suggested_type`/`ai_agreement` 컬럼으로 데이터만 축적, Supabase 대시보드에서 확인
+  - 미결: AI 제안 시점 — 입력 중 온디맨드(버튼) vs 저장 후 백그라운드 분류
+  - 미결: 모델/제공자 — Claude API(PLAN.md 전제) vs Gemini API 사용 검토 중 → SDK·env 키 구성에 영향, 확정 필요
+  - 참고: 분류 입력 데이터는 P6.5(문제 본문/내가 쓴 답/정답/사진)로 이미 확보 — 별도 풀이 필드 추가 여부는 제안 시점 확정 후 판단
+
 ## 운영 체크리스트 (구현 범위 밖)
 
 - [ ] 👤 보호자 동의 안내문 준비 (코호트 투입 전 — LLM 단계 전에는 외부 데이터 전송 없음)
 - [ ] 👤 1단계 벤치마크 계측 — 1주일간 자발적 입력 빈도를 Supabase 대시보드(created_at 기준)로 확인
-
-> Phase 7(LLM 보조 분류)은 이번 구현 범위 밖 — 개요는 PLAN.md 참조.
