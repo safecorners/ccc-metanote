@@ -86,6 +86,17 @@ export function EditMistakeForm({
       <form action={formAction} className="flex flex-col gap-6">
         <input type="hidden" name="unit_id" value={unitId} />
         <input type="hidden" name="error_type" value={errorType ?? ""} />
+        {/* AI 제안은 수정하지 않고 왕복만 — 태그를 바꾸면 서버가 ai_agreement를 재계산한다 */}
+        <input
+          type="hidden"
+          name="ai_suggested_type"
+          value={mistake.ai_suggested_type ?? ""}
+        />
+        <input
+          type="hidden"
+          name="ai_suggested_subtype"
+          value={mistake.ai_suggested_subtype ?? ""}
+        />
         <input
           type="hidden"
           name="image_remove"

@@ -86,15 +86,26 @@
 - [x] P6.5-7 `e2e/mistakes.spec.ts` +4건 — 사진·본문 포함 기록(픽스처 `e2e/fixtures/problem.jpg`), 목록→상세(본문·답·signed URL 이미지 naturalWidth), 계정 B 상세 접근 404, 상세 수정(답 변경+사진 삭제) / beforeAll에 storage 정리 추가
 - [x] **P6.5-V 검증 게이트**: Vitest 59 + Playwright 전체 회귀 + prod build 통과
 
-## Phase 7 — LLM 보조 분류 (계획 수립 중, 구현 미착수)
+## Phase 7 — LLM 보조 분류 (Gemini, 태그 먼저 온디맨드)
 
-- [ ] P7-0 계획 확정 — 아래 미결 사항 결정 후 태스크 분해 (진행 현황: PLAN.md Phase 7 "계획 수립 현황")
-  - 확정: AI-학생 일치율(목표 70%)은 앱 내 미표시 — `ai_suggested_type`/`ai_agreement` 컬럼으로 데이터만 축적, Supabase 대시보드에서 확인
-  - 미결: AI 제안 시점 — 입력 중 온디맨드(버튼) vs 저장 후 백그라운드 분류
-  - 미결: 모델/제공자 — Claude API(PLAN.md 전제) vs Gemini API 사용 검토 중 → SDK·env 키 구성에 영향, 확정 필요
-  - 참고: 분류 입력 데이터는 P6.5(문제 본문/내가 쓴 답/정답/사진)로 이미 확보 — 별도 풀이 필드 추가 여부는 제안 시점 확정 후 판단
+- [x] P7-1 `@google/genai` 설치 + `.env.example`에 `GEMINI_API_KEY`/`AI_MOCK` 이름 추가
+- [x] P7-2 `taxonomy.test.ts` — MZI 6유형(`ERROR_SUBTYPES`) id·label·유일성·파생 유틸 테스트 (TDD)
+- [x] P7-3 `taxonomy.ts` — `ERROR_SUBTYPES` 6종 `{id, label, description}` + `getErrorSubtype`/`isErrorSubtypeId` (2층 분류 단일 소스)
+- [x] P7-4 `src/lib/ai/suggestion.test.ts` 23건 — 프롬프트 빌더(few-shot 3개·null 필드 생략·여분 필드 미유출)·`hasClassifiableText`·응답/요청 파서 (TDD)
+- [x] P7-5 `src/lib/ai/suggestion.ts` — 순수 모듈: `buildSuggestionPrompt`(학생 태그 미포함 — 일치율 지표 오염 방지), `SUGGESTION_RESPONSE_SCHEMA`, zod 응답/요청 파서
+- [x] P7-6 `src/lib/ai/gemini.ts` — server-only 래퍼: `gemini-3.5-flash` + responseJsonSchema 구조화 출력, 10s 타임아웃, `AI_MOCK=1` 고정 응답(E2E용)
+- [x] 👤 P7-7 `0004_ai_suggestion.sql` — `ai_suggested_type`/`ai_suggested_subtype` CHECK enum + `ai_agreement`(제안 필수 CHECK), MCP `apply_migration` 적용·advisor 신규 이슈 없음, `types.ts` Mistake 확장 (3컬럼 모두 null = AI 미사용)
+- [x] P7-8 `mistake-form.test.ts` — ai 필드 파싱(빈 값→null)·`ai_agreement` 파생(true/false/null)·enum 밖 거부 (TDD)
+- [x] P7-9 `mistake-form.ts` — `ai_suggested_*` 파싱 + `ai_agreement` 서버 파생 (클라이언트 미신뢰, `...parsed.data` spread로 create/update 자동 반영)
+- [x] P7-10 `suggestErrorType` 서버 액션 — verifySession→zod 검증(태그·텍스트 필수)→Gemini→파싱, no-throw (실패해도 30초 저장 플로우 불침해)
+- [x] P7-11 폼 UI — 태그 fieldset 아래 "AI 제안 받기" 버튼(단원+태그+텍스트 있어야 활성), 제안 카드(ErrorTag+서브 유형+이유, 제안 태그 탭하면 선택 전환 — 최종 선택은 학생), hidden `ai_suggested_*` 왕복, 수정 폼은 왕복만(태그 변경 시 `ai_agreement` 자동 재계산)
+- [x] P7-12 `e2e/ai-suggestion.spec.ts` 5건(AI_MOCK, `AI-%` prefix로 mistakes.spec `E2E-%` 정리와 격리) — 버튼 활성 조건 / 제안 카드 / 수락 저장 agreement=true / 유지 저장 false / 미사용 null(DB 직검증) + `playwright.config.ts`(webServer `AI_MOCK=1`, desktop 제외, reuseExistingServer 함정 주석)
+- [x] P7-13 문서 갱신 — PLAN.md Phase 7 확정 반영, SCHEMA.md(0004 컬럼·2층 taxonomy·AI 데이터 흐름), 보호자 동의 문구 갱신
+- [ ] 👤 P7-14 프로덕션 env에 `GEMINI_API_KEY` 등록 (Vercel, P6-7과 함께)
+- [x] **P7-V 검증 게이트**: tsc·lint 클린 + Vitest 94 + Playwright 53(+1 skip) + prod build 통과, 실 Gemini 스모크 1회(분류 정확·존댓말 이유·지연 4.2s < 10s 타임아웃)
 
 ## 운영 체크리스트 (구현 범위 밖)
 
-- [ ] 👤 보호자 동의 안내문 준비 (코호트 투입 전 — LLM 단계 전에는 외부 데이터 전송 없음)
+- [ ] 👤 보호자 동의 안내문 준비 (코호트 투입 전) — Phase 7 반영 문구: "AI 제안 버튼을 누르면 문제 본문·답·메모 텍스트가 오류 원인 분류 목적으로 Google Gemini API에 전송됩니다. 이름·이메일 등 식별 정보와 사진은 전송되지 않으며, 버튼을 누르지 않으면 어떤 데이터도 외부로 나가지 않습니다."
 - [ ] 👤 1단계 벤치마크 계측 — 1주일간 자발적 입력 빈도를 Supabase 대시보드(created_at 기준)로 확인
+- [ ] 👤 AI-학생 일치율(목표 70%) 계측 — Supabase 대시보드에서 `ai_agreement` 집계 (앱 내 미표시 결정)

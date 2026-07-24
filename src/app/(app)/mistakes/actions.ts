@@ -1,6 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { requestSuggestion } from "@/lib/ai/gemini";
+import {
+  parseSuggestionRequest,
+  parseSuggestionResponse,
+  type AiSuggestion,
+} from "@/lib/ai/suggestion";
 import { verifySession } from "@/lib/dal";
 import { parseMistakeForm } from "@/lib/mistake-form";
 import { createClient } from "@/lib/supabase/server";
@@ -103,6 +109,53 @@ export async function updateMistake(
   revalidatePath(`/mistakes/${id}`);
   revalidatePath("/dashboard");
   return { error: null, saved: prev.saved + 1 };
+}
+
+export type SuggestionState =
+  | { ok: true; suggestion: AiSuggestion }
+  | { ok: false; error: string };
+
+/**
+ * AI 태그 제안 (Phase 7) — 학생이 태그를 먼저 고른 뒤 버튼으로 요청한다.
+ * 절대 throw하지 않는다: 실패해도 저장 플로우는 AI 없이 완결돼야 한다.
+ * 학생이 고른 태그는 검증에만 쓰고 프롬프트에는 넣지 않는다 (일치율 지표 보호).
+ */
+export async function suggestErrorType(raw: {
+  error_type: string;
+  unit_name: string;
+  problem_text: string;
+  my_answer: string;
+  correct_answer: string;
+  memo: string;
+}): Promise<SuggestionState> {
+  await verifySession();
+
+  const parsed = parseSuggestionRequest(raw);
+  if (!parsed.ok) {
+    return { ok: false, error: parsed.error };
+  }
+
+  let responseText: string;
+  try {
+    responseText = await requestSuggestion(parsed.data.input);
+  } catch {
+    return {
+      ok: false,
+      error:
+        "지금은 AI 제안을 받지 못했어요. 잠시 후 다시 시도하거나 직접 태그를 골라 주세요",
+    };
+  }
+
+  const result = parseSuggestionResponse(responseText);
+  if (!result.ok) {
+    return {
+      ok: false,
+      error:
+        "지금은 AI 제안을 받지 못했어요. 잠시 후 다시 시도하거나 직접 태그를 골라 주세요",
+    };
+  }
+
+  return { ok: true, suggestion: result.suggestion };
 }
 
 export async function toggleMistakeResolved(id: string, resolved: boolean) {

@@ -1,4 +1,4 @@
-import type { ErrorTypeId } from "./taxonomy";
+import type { ErrorSubtypeId, ErrorTypeId } from "./taxonomy";
 
 // supabase/migrations/0001_init.sql 의 row 타입.
 // 스키마를 바꾸면 여기도 같이 고친다 (생성 타입 도입은 스키마가 굳은 뒤에).
@@ -31,6 +31,11 @@ export type Mistake = {
   correct_answer: string | null;
   /** 'mistake-images' 버킷 내 경로: {user_id}/{uuid}.jpg */
   image_path: string | null;
+  /** AI 제안 3종 — 모두 null이면 AI 미사용 저장 (0004) */
+  ai_suggested_type: ErrorTypeId | null;
+  ai_suggested_subtype: ErrorSubtypeId | null;
+  /** 최종 error_type이 제안과 일치했는가 — 제안이 있을 때만 non-null */
+  ai_agreement: boolean | null;
   resolved: boolean;
   /** YYYY-MM-DD */
   mistake_date: string;

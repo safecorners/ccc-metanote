@@ -28,6 +28,9 @@ describe("parseMistakeForm", () => {
         my_answer: null,
         correct_answer: null,
         image_path: null,
+        ai_suggested_type: null,
+        ai_suggested_subtype: null,
+        ai_agreement: null,
       },
     });
   });
@@ -55,6 +58,9 @@ describe("parseMistakeForm", () => {
         my_answer: null,
         correct_answer: null,
         image_path: null,
+        ai_suggested_type: null,
+        ai_suggested_subtype: null,
+        ai_agreement: null,
       },
     });
   });
@@ -145,6 +151,9 @@ describe("parseMistakeForm", () => {
         my_answer: "3",
         correct_answer: "2",
         image_path: "user-1/abc.jpg",
+        ai_suggested_type: null,
+        ai_suggested_subtype: null,
+        ai_agreement: null,
       },
     });
   });
@@ -170,5 +179,89 @@ describe("parseMistakeForm", () => {
       );
       expect(result.ok).toBe(false);
     }
+  });
+});
+
+describe("parseMistakeForm — AI 제안 필드 (Phase 7)", () => {
+  const withAi = (entries: Record<string, string>) =>
+    form({ unit_id: "1", ...entries });
+
+  it("제안과 최종 태그가 같으면 ai_agreement=true", () => {
+    const result = parseMistakeForm(
+      withAi({
+        error_type: "no_concept",
+        ai_suggested_type: "no_concept",
+        ai_suggested_subtype: "distorted_theorem",
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.ai_suggested_type).toBe("no_concept");
+      expect(result.data.ai_suggested_subtype).toBe("distorted_theorem");
+      expect(result.data.ai_agreement).toBe(true);
+    }
+  });
+
+  it("제안을 받고 다른 태그를 고르면 ai_agreement=false — 제안은 보존된다", () => {
+    const result = parseMistakeForm(
+      withAi({
+        error_type: "calc_error",
+        ai_suggested_type: "no_concept",
+        ai_suggested_subtype: "distorted_theorem",
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.ai_suggested_type).toBe("no_concept");
+      expect(result.data.ai_agreement).toBe(false);
+    }
+  });
+
+  it("제안 없이(빈 값) 저장하면 3필드 모두 null", () => {
+    const result = parseMistakeForm(
+      withAi({
+        error_type: "careless",
+        ai_suggested_type: "",
+        ai_suggested_subtype: "",
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.ai_suggested_type).toBeNull();
+      expect(result.data.ai_suggested_subtype).toBeNull();
+      expect(result.data.ai_agreement).toBeNull();
+    }
+  });
+
+  it("유형 제안 없이 서브 유형만 오면 둘 다 null로 정리한다", () => {
+    const result = parseMistakeForm(
+      withAi({
+        error_type: "careless",
+        ai_suggested_subtype: "distorted_theorem",
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.ai_suggested_type).toBeNull();
+      expect(result.data.ai_suggested_subtype).toBeNull();
+      expect(result.data.ai_agreement).toBeNull();
+    }
+  });
+
+  it.each([
+    ["ai_suggested_type", "lazy"],
+    ["ai_suggested_subtype", "no_concept"],
+  ])("enum 밖 %s(%s)은 거부한다", (field, value) => {
+    const result = parseMistakeForm(
+      withAi({
+        error_type: "careless",
+        ai_suggested_type: "careless",
+        [field]: value,
+      }),
+    );
+    expect(result).toEqual({
+      ok: false,
+      error: "AI 제안 정보가 올바르지 않아요",
+    });
   });
 });

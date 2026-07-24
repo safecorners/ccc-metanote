@@ -20,7 +20,7 @@ docs/RESEARCH.md의 결론에 따라, 중학생 대상 오답 분석 웹앱을 "
 
 Green(#1aae39)은 극복 완료 전용, Brown은 일러스트 전용 — 오류 유형 아님.
 
-**2층(Phase 7 예약): Movshovitz-Hadar 6유형** — 학생이 풀이/메모를 입력하면 LLM이 MZI 기준으로 서브 분류를 제안하는 정밀화 층 ("개념 이해 부족, 그중에서도 정리·정의 왜곡으로 보여요"). 지금은 스키마·UI에 반영하지 않는다.
+**2층(Phase 7 구현 완료): Movshovitz-Hadar 6유형** — 학생이 오답 상세를 입력하면 LLM이 MZI 기준으로 서브 분류를 제안하는 정밀화 층 ("개념 이해 부족, 그중에서도 정리·정의 왜곡으로 보여요"). `taxonomy.ts`의 `ERROR_SUBTYPES`가 단일 소스 (Phase 7 섹션 참조).
 
 현재 리포는 create-next-app 기본 스캐폴드(Next.js **16.2.11**, React 19.2, React Compiler on, Tailwind v4, `src/app/`)이며 기능 코드는 없다.
 
@@ -145,18 +145,16 @@ Green(#1aae39)은 극복 완료 전용, Brown은 일러스트 전용 — 오류 
 
 **검증**: TDD — 스트릭·누적 스탯 계산 단위 테스트 먼저. `e2e/onboarding.spec.ts`(오답 0건 신규 계정의 3단계 안내 카드) + 전체 회귀(`npm run test && npm run test:e2e`). 실기기(iOS Safari/Android Chrome) 전체 플로우는 수동 1회. RESEARCH.md 1단계 벤치마크(1주 자발적 입력 빈도)는 created_at 기반으로 Supabase 대시보드에서 확인 — 앱 내 관리 화면 미구현.
 
-## Phase 7 — LLM 보조 분류 (계획 수립 중)
+## Phase 7 — LLM 보조 분류 (구현 완료)
 
-- **2층 분류 구조**: 학생이 오답 상세(문제 본문/내가 쓴 답/정답/메모)를 입력하면 LLM few-shot으로 1층(Newman 5종) 태그를 검증·제안하고, Movshovitz-Hadar 6유형(오용된 자료/잘못 해석된 언어/부적절한 추론/정리·정의 왜곡/검증 안 된 해답/기술적 오류)으로 서브 분류를 정밀화 — 최종 선택은 항상 학생. API 키는 서버 전용.
-- `mistakes`에 `ai_suggested_type`/`ai_agreement` 컬럼 추가 → LLM-학생 일치율(목표 70%) 데이터 자동 축적.
-- 사진 첨부(Supabase Storage)는 **Phase 6.5에서 구현 완료** (TASK.md P6.5 참조 — 문제 본문/내 답/정답/사진 컬럼 및 상세 페이지). OCR(Mathpix)은 입력 마찰이 병목으로 확인될 때만 후속 검토.
+**확정 결정 (2026-07-24)**: 제공자 Google Gemini `gemini-3.5-flash`(`@google/genai`, `GEMINI_API_KEY` 서버 전용) / 제안 시점 **입력 중 온디맨드 버튼 — 태그 먼저**(학생이 태그를 고른 뒤에만 요청 가능, 앵커링 완화) / 일치율 앱 내 미표시(데이터만 축적).
 
-**계획 수립 현황 (2026-07-24)**
-
-- 확정: AI-학생 일치율은 앱 내 미표시 — 컬럼으로 데이터만 축적하고 Supabase 대시보드에서 확인.
-- 미결 ①: AI 제안 시점 — 입력 중 온디맨드(메모/상세 입력 후 버튼으로 제안 요청 → 학생이 최종 태그 선택) vs 저장 후 백그라운드 분류. "최종 선택은 항상 학생" 원칙에는 전자가 부합.
-- 미결 ②: 모델/제공자 — 본 문서는 Claude API 전제였으나 Gemini API 사용을 검토 중. 확정 시 SDK·env 키·프롬프트 구성 갱신 필요.
-- 진행: 분류 입력 데이터는 Phase 6.5로 확보됨(problem_text/my_answer/correct_answer/image_path). 별도 풀이 필드 추가 여부는 미결 ① 확정 후 판단.
+- **2층 분류 구조**: 학생이 오답 상세(문제 본문/내가 쓴 답/정답/메모 — Phase 6.5 컬럼 재사용)를 적고 태그를 고른 뒤 "AI 제안 받기"를 탭하면, Gemini가 few-shot + 구조화 출력(responseJsonSchema)으로 1층(Newman 5종) 태그와 Movshovitz-Hadar 6유형(`taxonomy.ts` `ERROR_SUBTYPES` — 오용된 자료/잘못 해석된 언어/부적절한 추론/정리·정의 왜곡/검증 안 된 해답/기술적 오류) 서브 분류 + 한 줄 이유를 제안한다 — **최종 선택은 항상 학생** (제안 태그를 탭해야만 선택이 바뀐다).
+- **일치율 지표 보호**: 학생이 고른 태그는 프롬프트에 넣지 않는다(모델 독립 분류) — 단위 테스트가 미유출을 단언. `ai_agreement`는 서버 파싱 계층(`parseMistakeForm`)에서 파생 저장(클라이언트 미신뢰), 상세 수정에서 태그를 바꾸면 자동 재계산.
+- `mistakes`에 `ai_suggested_type`/`ai_suggested_subtype`/`ai_agreement`(0004, 셋 다 null = AI 미사용) → LLM-학생 일치율(목표 70%)은 Supabase 대시보드에서 `ai_agreement` 집계로 확인.
+- **실패 격리**: 제안 액션은 no-throw + 10s 타임아웃 — Gemini 장애가 30초 저장 플로우를 막지 않는다. E2E는 `AI_MOCK=1` 고정 응답으로 실코드 경로를 검증.
+- **개인정보**: 전송 데이터는 단원명+학생이 적은 텍스트 4종뿐(식별 정보·사진 미전송), 옵트인 버튼으로만 전송 발생 — 보호자 동의 안내문 문구는 TASK.md 운영 체크리스트 참조.
+- 후속 여지: 사진(이미지)의 LLM 전송·OCR(Mathpix)은 입력 마찰이 병목으로 확인될 때만 검토.
 
 ---
 
@@ -168,7 +166,7 @@ Green(#1aae39)은 극복 완료 전용, Brown은 일러스트 전용 — 오류 
 
 ## 운영 체크리스트 (구현 범위 밖)
 
-- **미성년자 개인정보**: 코호트 투입(Phase 6) 전 보호자 동의 안내문 준비 — LLM 단계(Phase 7) 전에는 외부 데이터 전송 없음.
+- **미성년자 개인정보**: 코호트 투입(Phase 6) 전 보호자 동의 안내문 준비 — Phase 7 구현으로 AI 제안 버튼을 누를 때만 텍스트가 Google Gemini에 전송된다(옵트인, 식별 정보·사진 미전송). 안내문 문구는 TASK.md 운영 체크리스트 참조.
 - **주의**: Next 16 + @supabase/ssr 문서 갭 — proxy.ts 세션 리프레시는 Phase 1 검증 항목에 포함되어 있음.
 
 ## 커밋 규칙

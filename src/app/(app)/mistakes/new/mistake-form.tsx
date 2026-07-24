@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, ChevronDown, X } from "lucide-react";
+import { Camera, ChevronDown, Sparkles, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -15,11 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { hasClassifiableText, type AiSuggestion } from "@/lib/ai/suggestion";
 import { removeMistakeImage, uploadMistakeImage } from "@/lib/mistake-image";
-import { ERROR_TYPES, type ErrorTypeId } from "@/lib/taxonomy";
+import {
+  ERROR_TYPES,
+  getErrorSubtype,
+  getErrorType,
+  type ErrorTypeId,
+} from "@/lib/taxonomy";
 import type { Unit } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { createMistake, type MistakeFormState } from "../actions";
+import {
+  createMistake,
+  suggestErrorType,
+  type MistakeFormState,
+} from "../actions";
 
 const GRADES = [1, 2, 3] as const;
 
@@ -43,11 +53,57 @@ export function MistakeForm({
   );
   const [detailsOpen, setDetailsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // AI 제안 (Phase 7) — 태그를 먼저 고른 뒤에만 요청 가능, 최종 선택은 항상 학생
+  const [hasText, setHasText] = useState(false);
+  const [aiPending, setAiPending] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiSuggestion, setAiSuggestion] = useState<AiSuggestion | null>(null);
 
   function selectImage(file: File | null) {
     if (image) URL.revokeObjectURL(image.previewUrl);
     if (!file && fileInputRef.current) fileInputRef.current.value = "";
     setImage(file ? { file, previewUrl: URL.createObjectURL(file) } : null);
+  }
+
+  function readTextFields() {
+    const fd = formRef.current ? new FormData(formRef.current) : new FormData();
+    const read = (name: string) => String(fd.get(name) ?? "");
+    return {
+      problem_text: read("problem_text"),
+      my_answer: read("my_answer"),
+      correct_answer: read("correct_answer"),
+      memo: read("memo"),
+    };
+  }
+
+  // 텍스트 필드는 비제어라 폼 onChange 위임으로만 추적한다
+  function syncHasText() {
+    setHasText(hasClassifiableText({ unitName: "", ...readTextFields() }));
+  }
+
+  async function requestAiSuggestion() {
+    if (!errorType) return;
+    const unitName = units.find((u) => String(u.id) === unitId)?.name ?? "";
+    setAiPending(true);
+    setAiError(null);
+    try {
+      const result = await suggestErrorType({
+        error_type: errorType,
+        unit_name: unitName,
+        ...readTextFields(),
+      });
+      if (result.ok) {
+        setAiSuggestion(result.suggestion);
+      } else {
+        setAiError(result.error);
+      }
+    } catch {
+      setAiError("지금은 AI 제안을 받지 못했어요. 잠시 후 다시 시도해 주세요");
+    } finally {
+      setAiPending(false);
+    }
   }
 
   const [state, formAction, pending] = useActionState(
@@ -72,9 +128,11 @@ export function MistakeForm({
             onClick: () => router.push("/dashboard"),
           },
         });
-        // 같은 시험의 다음 오답을 바로 적도록 단원은 유지, 태그·사진만 초기화
+        // 같은 시험의 다음 오답을 바로 적도록 단원은 유지, 태그·사진·AI 제안만 초기화
         setErrorType(null);
         selectImage(null);
+        setAiSuggestion(null);
+        setAiError(null);
       } else if (uploadedPath) {
         // 저장 실패 — 방금 올린 사진 롤백 (사진 state는 남겨 재시도 가능)
         void removeMistakeImage(uploadedPath);
@@ -88,9 +146,24 @@ export function MistakeForm({
 
   return (
     <Card className="flex flex-col gap-6">
-      <form action={formAction} className="flex flex-col gap-6">
+      <form
+        ref={formRef}
+        action={formAction}
+        onChange={syncHasText}
+        className="flex flex-col gap-6"
+      >
         <input type="hidden" name="unit_id" value={unitId} />
         <input type="hidden" name="error_type" value={errorType ?? ""} />
+        <input
+          type="hidden"
+          name="ai_suggested_type"
+          value={aiSuggestion?.suggested_type ?? ""}
+        />
+        <input
+          type="hidden"
+          name="ai_suggested_subtype"
+          value={aiSuggestion?.suggested_subtype ?? ""}
+        />
 
         <fieldset className="flex flex-col gap-1.5">
           <legend className="mb-1.5 text-caption text-ink-muted">학년</legend>
@@ -165,6 +238,67 @@ export function MistakeForm({
             ))}
           </div>
         </fieldset>
+
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={requestAiSuggestion}
+            disabled={!errorType || !unitId || !hasText || aiPending || pending}
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 self-start rounded-md border border-hairline bg-surface px-3.5 text-button text-ink disabled:opacity-50"
+          >
+            <Sparkles aria-hidden className="size-4" />
+            {aiPending ? "AI가 살펴보는 중…" : "AI 제안 받기"}
+          </button>
+
+          {!aiSuggestion && !aiError && (
+            <p className="text-caption text-ink-faint">
+              단원·태그를 고르고 문제 내용이나 메모를 적으면 AI가 원인을
+              짚어줘요
+            </p>
+          )}
+
+          {aiError && (
+            <p role="alert" className="text-caption text-accent-orange-deep">
+              {aiError}
+            </p>
+          )}
+
+          {aiSuggestion && (
+            <div
+              data-testid="ai-suggestion-card"
+              className="flex flex-col gap-2 rounded-md border border-hairline bg-canvas-soft p-3"
+            >
+              <p className="text-eyebrow text-ink-faint">AI 제안</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <ErrorTag
+                  label={getErrorType(aiSuggestion.suggested_type).label}
+                  selected
+                  dotClassName={
+                    getErrorType(aiSuggestion.suggested_type).dotClassName
+                  }
+                  selectedClassName={
+                    getErrorType(aiSuggestion.suggested_type).selectedClassName
+                  }
+                  onClick={() => setErrorType(aiSuggestion.suggested_type)}
+                  className="min-h-11 px-4"
+                />
+                <span className="text-caption text-ink-secondary">
+                  그중에서도 &lsquo;
+                  {getErrorSubtype(aiSuggestion.suggested_subtype).label}&rsquo;
+                  유형으로 보여요
+                </span>
+              </div>
+              <p className="text-caption text-ink-secondary">
+                {aiSuggestion.reason}
+              </p>
+              <p className="text-caption text-ink-faint">
+                {aiSuggestion.suggested_type === errorType
+                  ? "내가 고른 태그와 같아요"
+                  : "제안 태그를 탭하면 선택이 바뀌어요 — 최종 선택은 언제나 내 몫"}
+              </p>
+            </div>
+          )}
+        </div>
 
         <div className="flex flex-col gap-4 border-t border-hairline pt-4">
           <p className="text-eyebrow text-ink-faint">선택 입력</p>

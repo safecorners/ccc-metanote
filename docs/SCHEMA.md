@@ -1,7 +1,7 @@
 # MetaNote 데이터 구조 (SCHEMA.md)
 
 > 코드가 진실, 이 문서는 지도다. 스키마를 바꾸면 이 문서도 같이 갱신한다.
-> 소스: [supabase/migrations/0001_init.sql](../supabase/migrations/0001_init.sql) · [0003_mistake_detail.sql](../supabase/migrations/0003_mistake_detail.sql) · [src/lib/taxonomy.ts](../src/lib/taxonomy.ts) · [src/lib/types.ts](../src/lib/types.ts) · [src/lib/queries.ts](../src/lib/queries.ts)
+> 소스: [supabase/migrations/0001_init.sql](../supabase/migrations/0001_init.sql) · [0003_mistake_detail.sql](../supabase/migrations/0003_mistake_detail.sql) · [0004_ai_suggestion.sql](../supabase/migrations/0004_ai_suggestion.sql) · [src/lib/taxonomy.ts](../src/lib/taxonomy.ts) · [src/lib/types.ts](../src/lib/types.ts) · [src/lib/queries.ts](../src/lib/queries.ts)
 
 ## ER 다이어그램
 
@@ -47,6 +47,9 @@ erDiagram
         text my_answer "내가 쓴 답 (선택, 0003)"
         text correct_answer "정답 (선택, 0003)"
         text image_path "문제 사진 경로 (선택, 0003)"
+        text ai_suggested_type "AI 제안 유형 (CHECK 5종, 0004)"
+        text ai_suggested_subtype "AI 제안 서브 유형 (CHECK MZI 6종, 0004)"
+        boolean ai_agreement "최종 태그 = 제안 여부 (0004)"
         boolean resolved "극복 완료, 기본 false"
         date mistake_date "기본 KST 오늘"
         timestamptz created_at
@@ -66,6 +69,7 @@ erDiagram
 - `units(subject, grade, order_no)`는 UNIQUE — 시드가 이 키로 upsert된다.
 - `score_predictions`의 `predicted`/`actual`은 둘 다 nullable — 시험 전엔 예상만, 시험 후 실제를 채우는 시나리오 3 흐름 때문이다. 착각점수 = `actual - predicted` (둘 다 있을 때만, Phase 5에서 계산).
 - 인덱스: `mistakes(user_id, created_at desc)`(목록·시계열), `mistakes(user_id, unit_id)`(히트맵 집계·FK 겸용), `score_predictions(user_id, exam_date desc)`.
+- AI 3컬럼(0004)은 셋 다 null = AI 미사용 저장. CHECK `mistakes_ai_agreement_requires_suggestion`이 제안 없는 일치율을 막고, `ai_agreement`는 서버 파싱 계층([mistake-form.ts](../src/lib/mistake-form.ts))이 `최종 error_type === ai_suggested_type`으로 파생 저장한다 — 클라이언트 값은 신뢰하지 않는다.
 
 ## RLS 정책 요약
 
@@ -129,6 +133,12 @@ flowchart TD
 - `color`가 Tailwind 클래스와 별도로 hex를 갖는 이유: Recharts SVG는 CSS 변수를 못 읽는다.
 - green(`#1aae39`)은 극복 완료 전용, brown은 일러스트 전용 — 오류 유형 색이 아니다 (DESIGN.md 규칙).
 - 유형 추가/변경 절차: `ERROR_TYPES` 수정 → 테스트의 `EXPECTED` 갱신 → DB CHECK 제약 마이그레이션 → 끝 (UI·차트는 자동 반영).
+
+### 2층 서브 분류 — Movshovitz-Hadar 6유형 (Phase 7)
+
+AI 보조 분류 전용 정밀화 층. 같은 파일의 `ERROR_SUBTYPES`(`misused_data`/`misinterpreted_language`/`invalid_inference`/`distorted_theorem`/`unverified_solution`/`technical_error`, `{id, label, description}`)가 단일 소스이고, `mistakes.ai_suggested_subtype` CHECK([0004](../supabase/migrations/0004_ai_suggestion.sql))·zod enum·Gemini 프롬프트/응답 스키마가 전부 여기서 파생된다. `description`은 프롬프트의 분류 기준 겸 UI 문구다. 1층과 달리 학생이 직접 고르지 않는다 — AI 제안에만 쓰인다.
+
+**AI 제안 데이터 흐름** ([src/lib/ai/](../src/lib/ai/suggestion.ts)): 입력 폼(태그 먼저 선택) → `suggestErrorType` 서버 액션(검증 — 학생 태그는 프롬프트에 미포함, 일치율 오염 방지) → Gemini `gemini-3.5-flash`(구조화 출력, 10s 타임아웃, `AI_MOCK=1`이면 고정 응답) → 제안을 폼 hidden으로 왕복 → 저장 시 `parseMistakeForm`이 `ai_agreement` 파생. 전송 데이터는 단원명 + 학생 텍스트 4종뿐(식별 정보·사진 미전송).
 
 ## 데이터 접근 흐름
 
