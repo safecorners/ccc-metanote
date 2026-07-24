@@ -22,6 +22,10 @@ export const mistakeInputSchema = z.object({
   source: optionalText(100, "출처는 100자까지 적을 수 있어요"),
   problem_ref: optionalText(100, "문제 번호는 100자까지 적을 수 있어요"),
   memo: optionalText(500, "메모는 500자까지 적을 수 있어요"),
+  problem_text: optionalText(2000, "문제 본문은 2000자까지 적을 수 있어요"),
+  my_answer: optionalText(200, "내가 쓴 답은 200자까지 적을 수 있어요"),
+  correct_answer: optionalText(200, "정답은 200자까지 적을 수 있어요"),
+  image_path: optionalText(300, "사진 정보가 올바르지 않아요"),
 });
 
 export type MistakeInput = z.infer<typeof mistakeInputSchema>;
@@ -37,6 +41,10 @@ export function parseMistakeForm(formData: FormData): ParsedMistakeForm {
     source: String(formData.get("source") ?? ""),
     problem_ref: String(formData.get("problem_ref") ?? ""),
     memo: String(formData.get("memo") ?? ""),
+    problem_text: String(formData.get("problem_text") ?? ""),
+    my_answer: String(formData.get("my_answer") ?? ""),
+    correct_answer: String(formData.get("correct_answer") ?? ""),
+    image_path: String(formData.get("image_path") ?? ""),
   });
 
   if (!result.success) {

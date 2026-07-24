@@ -40,6 +40,43 @@ export const getProfile = cache(async (): Promise<Profile> => {
   return data;
 });
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const getMistake = cache(
+  async (id: string): Promise<MistakeWithUnit | null> => {
+    await verifySession();
+
+    // uuid 형식이 아니면 조회 없이 없음 처리 (Postgres 캐스팅 에러 방지)
+    if (!UUID_RE.test(id)) return null;
+
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("mistakes")
+      .select("*, unit:units(id, name, grade)")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) throw new Error(`오답 조회 실패: ${error.message}`);
+    return data as unknown as MistakeWithUnit | null;
+  },
+);
+
+/** 비공개 버킷의 문제 사진을 1시간짜리 signed URL로 발급 — 실패 시 null (페이지는 유지) */
+export const getMistakeImageUrl = cache(
+  async (path: string): Promise<string | null> => {
+    await verifySession();
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.storage
+      .from("mistake-images")
+      .createSignedUrl(path, 3600);
+
+    if (error) return null;
+    return data.signedUrl;
+  },
+);
+
 export const getMistakes = cache(async (): Promise<MistakeWithUnit[]> => {
   await verifySession();
   const supabase = await createClient();

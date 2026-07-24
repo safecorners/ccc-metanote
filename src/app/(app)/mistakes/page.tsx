@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Check } from "lucide-react";
+import { Check, Image as ImageIcon } from "lucide-react";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
 import { ErrorTypeBadge } from "@/components/mistakes/error-type-badge";
@@ -72,15 +73,24 @@ export default async function MistakesPage() {
               <li key={mistake.id}>
                 <Card className="flex flex-col gap-3 p-4">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-col gap-1">
+                    <Link
+                      href={`/mistakes/${mistake.id}`}
+                      className="flex flex-col gap-1"
+                    >
                       <span className="text-title">{mistake.unit.name}</span>
-                      <span className="text-caption text-ink-faint">
+                      <span className="flex items-center gap-1 text-caption text-ink-faint">
                         중{mistake.unit.grade} ·{" "}
                         {formatDate(mistake.mistake_date)}
                         {mistake.source && ` · ${mistake.source}`}
                         {mistake.problem_ref && ` · ${mistake.problem_ref}`}
+                        {mistake.image_path && (
+                          <ImageIcon
+                            aria-label="문제 사진 있음"
+                            className="size-3.5"
+                          />
+                        )}
                       </span>
-                    </div>
+                    </Link>
                     <ErrorTypeBadge errorType={mistake.error_type} />
                   </div>
                   {mistake.memo && (
@@ -124,10 +134,21 @@ export default async function MistakesPage() {
                       {formatDate(mistake.mistake_date)}
                     </td>
                     <td className="px-4 py-3">
-                      {mistake.unit.name}
-                      <span className="ml-1.5 text-caption text-ink-faint">
-                        중{mistake.unit.grade}
-                      </span>
+                      <Link
+                        href={`/mistakes/${mistake.id}`}
+                        className="inline-flex items-center gap-1.5 hover:underline"
+                      >
+                        {mistake.unit.name}
+                        <span className="text-caption text-ink-faint">
+                          중{mistake.unit.grade}
+                        </span>
+                        {mistake.image_path && (
+                          <ImageIcon
+                            aria-label="문제 사진 있음"
+                            className="size-3.5 text-ink-faint"
+                          />
+                        )}
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <ErrorTypeBadge errorType={mistake.error_type} />

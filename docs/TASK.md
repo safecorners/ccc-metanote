@@ -75,6 +75,17 @@
 - [ ] 👤 P6-8 실기기 수동 테스트 — iOS Safari/Android Chrome 전체 플로우 1회
 - [ ] **P6-V 검증 게이트**: 전체 회귀 통과(구현 측 완료 — Vitest 56 + Playwright 44 + prod build) / 코호트 투입 가능 판정은 👤 P6-7·P6-8 완료 후
 
+## Phase 6.5 — 오답 상세: 문제/문항 기록 (사진 + 본문 + 답)
+
+- [x] P6.5-1 `supabase/migrations/0003_mistake_detail.sql` — mistakes에 `problem_text`/`my_answer`/`correct_answer`/`image_path` 4컬럼 + `mistake-images` 비공개 버킷(10MB, 이미지 mime) + storage.objects RLS 3정책(경로 첫 폴더 = 본인 uid), MCP `apply_migration` 적용·advisor 확인
+- [x] P6.5-2 타입·zod 확장 (TDD) — `types.ts` Mistake 4필드, `mistake-form.ts` optionalText 4필드(본문 2000자·답 200자), `mistake-form.test.ts` +4건
+- [x] P6.5-3 `src/lib/mistake-image.ts` — 브라우저 canvas 압축(최대 변 1600px JPEG 0.8, 디코드 실패 시 원본 폴백) 후 supabase-js 직접 업로드(`{uid}/{uuid}.jpg`), 서버 액션 body limit 무관
+- [x] P6.5-4 서버 액션 — `createMistake` image_path `{uid}/` prefix 검증, `updateMistake` 신설(새 업로드 > 삭제 요청 > 유지, 옛 객체 정리), `deleteMistake` 딸린 사진 정리
+- [x] P6.5-5 입력 폼 — 선택 입력에 "사진 추가"(미리보기·빼기) + 접이식 "자세히 기록"(문제 본문/내가 쓴 답/정답, 접어도 값 유지), 저장 성공 시 사진 state 리셋·실패 시 업로드 롤백 — 필수 구간(탭 4회) 무변경
+- [x] P6.5-6 상세 페이지 — `queries.ts` `getMistake`(uuid 검사·RLS 0행→null)/`getMistakeImageUrl`(signed URL 1h), `/mistakes/[id]`(404 처리) + `edit-mistake-form.tsx`(사진 바꾸기/삭제/삭제 취소), 목록 카드·테이블에 상세 링크 + 사진 아이콘
+- [x] P6.5-7 `e2e/mistakes.spec.ts` +4건 — 사진·본문 포함 기록(픽스처 `e2e/fixtures/problem.jpg`), 목록→상세(본문·답·signed URL 이미지 naturalWidth), 계정 B 상세 접근 404, 상세 수정(답 변경+사진 삭제) / beforeAll에 storage 정리 추가
+- [x] **P6.5-V 검증 게이트**: Vitest 59 + Playwright 전체 회귀 + prod build 통과
+
 ## 운영 체크리스트 (구현 범위 밖)
 
 - [ ] 👤 보호자 동의 안내문 준비 (코호트 투입 전 — LLM 단계 전에는 외부 데이터 전송 없음)

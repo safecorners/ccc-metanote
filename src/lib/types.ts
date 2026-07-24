@@ -26,6 +26,11 @@ export type Mistake = {
   source: string | null;
   problem_ref: string | null;
   memo: string | null;
+  problem_text: string | null;
+  my_answer: string | null;
+  correct_answer: string | null;
+  /** 'mistake-images' 버킷 내 경로: {user_id}/{uuid}.jpg */
+  image_path: string | null;
   resolved: boolean;
   /** YYYY-MM-DD */
   mistake_date: string;

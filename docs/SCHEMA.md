@@ -1,7 +1,7 @@
 # MetaNote 데이터 구조 (SCHEMA.md)
 
 > 코드가 진실, 이 문서는 지도다. 스키마를 바꾸면 이 문서도 같이 갱신한다.
-> 소스: [supabase/migrations/0001_init.sql](../supabase/migrations/0001_init.sql) · [src/lib/taxonomy.ts](../src/lib/taxonomy.ts) · [src/lib/types.ts](../src/lib/types.ts) · [src/lib/queries.ts](../src/lib/queries.ts)
+> 소스: [supabase/migrations/0001_init.sql](../supabase/migrations/0001_init.sql) · [0003_mistake_detail.sql](../supabase/migrations/0003_mistake_detail.sql) · [src/lib/taxonomy.ts](../src/lib/taxonomy.ts) · [src/lib/types.ts](../src/lib/types.ts) · [src/lib/queries.ts](../src/lib/queries.ts)
 
 ## ER 다이어그램
 
@@ -43,6 +43,10 @@ erDiagram
         text source "출처 (선택)"
         text problem_ref "문제번호 (선택)"
         text memo "한 줄 메모 (선택)"
+        text problem_text "문제 본문 (선택, 0003)"
+        text my_answer "내가 쓴 답 (선택, 0003)"
+        text correct_answer "정답 (선택, 0003)"
+        text image_path "문제 사진 경로 (선택, 0003)"
         boolean resolved "극복 완료, 기본 false"
         date mistake_date "기본 KST 오늘"
         timestamptz created_at
@@ -77,6 +81,16 @@ erDiagram
 
 `profiles`에 INSERT 정책이 없는 것은 의도다 — 생성은 아래 가입 트리거만 담당한다.
 격리 검증: [e2e/rls.spec.ts](../e2e/rls.spec.ts) (`db` 프로젝트, 계정 A↔B 교차 접근 시도).
+
+## Storage — mistake-images (문제 사진)
+
+비공개 버킷 하나 ([0003](../supabase/migrations/0003_mistake_detail.sql)). 10MB 제한, 이미지 mime만 허용.
+
+- **경로 규칙**: `{user_id}/{uuid}.jpg` — `mistakes.image_path`가 이 경로를 가리킨다.
+- **storage.objects 정책** (전부 `authenticated`, 조건은 `bucket_id = 'mistake-images' and (storage.foldername(name))[1] = (select auth.uid())::text`): SELECT / INSERT / DELETE 3개. UPDATE 정책은 의도적으로 없음 — 사진 교체는 새 업로드 + 옛 객체 삭제.
+- **업로드 흐름**: 브라우저에서 canvas 압축(최대 변 1600px, JPEG 0.8) 후 supabase-js로 직접 업로드 ([mistake-image.ts](../src/lib/mistake-image.ts)) → 서버 액션에는 경로 문자열만 전달 (파일 바이트가 서버 액션 body limit을 타지 않는다). 서버는 `{uid}/` prefix를 재검증.
+- **표시 흐름**: DAL의 `getMistakeImageUrl()`이 1시간짜리 signed URL 발급 → 상세 페이지 `<img>`. 요청마다 재서명하므로 만료 문제 없음.
+- **정리**: 오답 삭제·사진 교체·저장 실패 롤백 시 옛 객체를 베스트에포트로 remove. 남은 고아 객체는 비공개 버킷이라 노출되지 않는다.
 
 ## 가입 시 프로필 생성 흐름
 

@@ -24,6 +24,10 @@ describe("parseMistakeForm", () => {
         source: null,
         problem_ref: null,
         memo: null,
+        problem_text: null,
+        my_answer: null,
+        correct_answer: null,
+        image_path: null,
       },
     });
   });
@@ -47,6 +51,10 @@ describe("parseMistakeForm", () => {
         source: "중간고사",
         problem_ref: "12번",
         memo: null,
+        problem_text: null,
+        my_answer: null,
+        correct_answer: null,
+        image_path: null,
       },
     });
   });
@@ -108,6 +116,57 @@ describe("parseMistakeForm", () => {
     for (const field of ["source", "problem_ref"] as const) {
       const result = parseMistakeForm(
         form({ unit_id: "1", error_type: "careless", [field]: "가".repeat(101) }),
+      );
+      expect(result.ok).toBe(false);
+    }
+  });
+
+  it("문제 본문·답·사진 경로를 함께 받아 공백을 잘라 저장한다", () => {
+    const result = parseMistakeForm(
+      form({
+        unit_id: "5",
+        error_type: "no_concept",
+        problem_text: " 2x + 3 = 7 일 때 x의 값을 구하시오 ",
+        my_answer: " 3 ",
+        correct_answer: " 2 ",
+        image_path: "user-1/abc.jpg",
+      }),
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      data: {
+        unit_id: 5,
+        error_type: "no_concept",
+        source: null,
+        problem_ref: null,
+        memo: null,
+        problem_text: "2x + 3 = 7 일 때 x의 값을 구하시오",
+        my_answer: "3",
+        correct_answer: "2",
+        image_path: "user-1/abc.jpg",
+      },
+    });
+  });
+
+  it("문제 본문이 2000자를 넘으면 실패한다", () => {
+    const result = parseMistakeForm(
+      form({
+        unit_id: "1",
+        error_type: "careless",
+        problem_text: "가".repeat(2001),
+      }),
+    );
+    expect(result).toEqual({
+      ok: false,
+      error: "문제 본문은 2000자까지 적을 수 있어요",
+    });
+  });
+
+  it("내가 쓴 답·정답이 200자를 넘으면 실패한다", () => {
+    for (const field of ["my_answer", "correct_answer"] as const) {
+      const result = parseMistakeForm(
+        form({ unit_id: "1", error_type: "careless", [field]: "가".repeat(201) }),
       );
       expect(result.ok).toBe(false);
     }
